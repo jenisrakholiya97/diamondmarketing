@@ -1,0 +1,428 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Core Diamond Luxe Design Tokens */
+  --diamond-ivory: #FAFAF7;
+  --pure-white: #FFFFFF;
+  --obsidian: #151515;
+
+  /* Luxury Champagne Gold */
+  --champagne: #C8A96B;
+  --champagne-light: #E7D7B4;
+  --champagne-dark: #9E7B43;
+
+  /* Neutrals */
+  --pearl: #F2F0EB;
+  --slate: #6F706F;
+  --platinum-mist: #DDDCD7;
+
+  /* Dark Luxury */
+  --midnight: #0D0F12;
+
+  /* Diamond Technology */
+  --ice-blue: #DCEAF2;
+  --ice-blue-text: #17212A;
+
+  /* Responsible Production */
+  --sage-green: #E7EEE9;
+  --sage-green-text: #26352D;
+
+  /* Global Theme References (Defaults to Diamond Luxe) */
+  --color-primary: #151515;
+  --color-background: #FAFAF7;
+  --color-accent: #C8A96B;
+  --color-accent-hover: #9E7B43;
+  --color-accent-bg: rgba(200, 169, 107, 0.15);
+  --color-accent-border: rgba(200, 169, 107, 0.35);
+  --color-surface: #FFFFFF;
+  --color-beige: #F2F0EB;
+  --color-text-secondary: #6F706F;
+  --color-border: #DDDCD7;
+  --color-dark: #0D0F12;
+}
+
+/* ==========================================
+   THEME COLOR SETUP PRESETS
+   ========================================== */
+html[data-theme-color="diamond-luxe"],
+html.theme-diamond-luxe {
+  --color-primary: #151515;
+  --color-background: #FAFAF7;
+  --color-accent: #C8A96B;
+  --color-accent-hover: #9E7B43;
+  --color-accent-bg: rgba(200, 169, 107, 0.15);
+  --color-accent-border: rgba(200, 169, 107, 0.35);
+  --color-surface: #FFFFFF;
+  --color-border: #DDDCD7;
+  --color-text-secondary: #6F706F;
+  --color-dark: #0D0F12;
+}
+
+html[data-theme-color="gold"],
+html.theme-gold {
+  --color-accent: #c6a15b;
+  --color-accent-hover: #b38d4d;
+  --color-accent-bg: rgba(198, 161, 91, 0.15);
+  --color-accent-border: rgba(198, 161, 91, 0.35);
+}
+
+@layer base {
+
+  html,
+  body {
+    @apply font-sans antialiased transition-colors duration-200;
+    max-width: 100vw;
+    overflow-x: clip;
+    background-color: #FAF9F6;
+    color: #171717;
+  }
+
+  /* Dark Theme Default */
+  html.dark {
+    background-color: #111111;
+    color: #FAF9F6;
+  }
+
+  /* Light Theme Default */
+  html.light,
+  html:not(.dark) {
+    background-color: #FAF9F6;
+    color: #171717;
+  }
+}
+
+/* ==========================================
+   MODERN LUXURY THEME OVERRIDES & CONTRAST
+   ========================================== */
+
+/* Main Containers & Cards */
+html.light .bg-\[\#070A0F\],
+html.light .bg-\[\#0B0F17\],
+html.light .bg-\[\#0B131F\],
+.bg-surface {
+  background-color: #FFFFFF !important;
+  border-color: #DED5C4 !important;
+  box-shadow: 0 4px 20px -5px rgba(23, 23, 23, 0.04) !important;
+}
+
+/* Header Navbar Base & Theme Overrides */
+html.light header {
+  background-color: rgba(250, 249, 246, 0.95) !important;
+  border-color: #DED5C4 !important;
+  color: #171717 !important;
+}
+
+html.dark header,
+html:not(.light) header {
+  background-color: rgba(11, 15, 23, 0.95) !important;
+  border-color: #1E293B !important;
+  color: #F8FAFC !important;
+}
+
+/* Header Navbar Buttons & High-Contrast Hover Rules */
+header nav button,
+.nav-item-btn {
+  transition: all 0.15s ease-in-out !important;
+}
+
+html.light header nav button {
+  color: #374151 !important;
+  font-weight: 600 !important;
+}
+
+html.light header nav button:hover {
+  color: var(--color-accent, #059669) !important;
+  background-color: #EFECE6 !important;
+  border-color: #DED5C4 !important;
+}
+
+html.light header nav button.active-nav,
+html.light header nav button[data-active="true"] {
+  color: var(--color-accent, #059669) !important;
+  background-color: #FFFFFF !important;
+  border-color: var(--color-accent-border, #C8A96B) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 700 !important;
+}
+
+html.dark header nav button,
+html:not(.light) header nav button {
+  color: #CBD5E1 !important;
+  font-weight: 600 !important;
+}
+
+html.dark header nav button:hover,
+html:not(.light) header nav button:hover {
+  color: var(--color-accent, #34D399) !important;
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(71, 85, 105, 0.9) !important;
+}
+
+html.dark header nav button.active-nav,
+html:not(.light) header nav button.active-nav,
+html.dark header nav button[data-active="true"],
+html:not(.light) header nav button[data-active="true"] {
+  color: var(--color-accent, #34D399) !important;
+  background-color: #0F172A !important;
+  border-color: var(--color-accent-border, rgba(16, 185, 129, 0.6)) !important;
+  font-weight: 700 !important;
+}
+
+/* Media Frames & Studio Video Backgrounds in Light Theme */
+html.light .bg-gradient-to-b.from-slate-900.via-slate-950.to-black,
+html.light .from-slate-950.via-\[\#0A111D\].to-slate-950 {
+  background: linear-gradient(180deg, #FAF9F6 0%, #F1EDE5 60%, #DED5C4 100%) !important;
+  border-color: #DED5C4 !important;
+}
+
+/* Text Colors in Light Theme */
+html.light .text-white {
+  color: #171717 !important;
+}
+
+html.light .text-slate-100,
+html.light .text-slate-200 {
+  color: #171717 !important;
+}
+
+html.light .text-slate-300,
+html.light .text-slate-400,
+html.light .text-slate-500 {
+  color: #77736C !important;
+}
+
+/* Dedicated translucent dark backdrop overlay for modals with frosted blur */
+.modal-backdrop-overlay {
+  background-color: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+html:has(.modal-backdrop-overlay),
+body:has(.modal-backdrop-overlay) {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+/* Sub-panels, Badges & Secondary Boxes */
+html.light .bg-slate-900:not(.modal-backdrop-overlay),
+html.light .bg-slate-900\/90:not(.modal-backdrop-overlay),
+html.light .bg-slate-900\/80:not(.modal-backdrop-overlay),
+html.light .bg-slate-900\/60:not(.modal-backdrop-overlay),
+html.light .bg-slate-900\/50:not(.modal-backdrop-overlay),
+html.light .bg-slate-950:not(.modal-backdrop-overlay),
+html.light .bg-slate-950\/90:not(.modal-backdrop-overlay),
+html.light .bg-slate-950\/80:not(.modal-backdrop-overlay) {
+  background-color: #FFFFFF !important;
+  border-color: #DED5C4 !important;
+  color: #171717 !important;
+}
+
+html.light .border-slate-800,
+html.light .border-slate-700 {
+  border-color: #DED5C4 !important;
+}
+
+/* Form Inputs, Textareas, Selects */
+html.light input,
+html.light select,
+html.light textarea {
+  background-color: #FFFFFF !important;
+  border-color: #DED5C4 !important;
+  color: #171717 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #77736C !important;
+}
+
+html.light input:focus,
+html.light select:focus,
+html.light textarea:focus {
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 2px var(--color-accent) !important;
+}
+
+/* Hero Section Gradient in Light Theme */
+html.light .from-\[\#0F172A\],
+html.light .to-\[\#0B0F17\] {
+  --tw-gradient-from: #FAF9F6 !important;
+  --tw-gradient-to: #F1EDE5 !important;
+  background-color: #FAF9F6 !important;
+  border-color: #DED5C4 !important;
+}
+
+/* =========================================================
+   COMPREHENSIVE GLOBAL ACCENT OVERRIDES FOR EVERY SMALL ELEMENT
+   ========================================================= */
+
+/* Text Colors */
+.text-emerald-300,
+.text-emerald-400,
+.text-emerald-500,
+.text-emerald-600,
+.text-emerald-700,
+.text-emerald-800,
+.text-emerald-900,
+.text-accent,
+.text-champagne {
+  color: var(--color-accent) !important;
+}
+
+.hover\:text-emerald-400:hover,
+.hover\:text-emerald-300:hover,
+.hover\:text-emerald-500:hover,
+.hover\:text-emerald-600:hover,
+.hover\:text-accent:hover {
+  color: var(--color-accent) !important;
+}
+
+.group:hover .group-hover\:text-emerald-400,
+.group:hover .group-hover\:text-emerald-300,
+.group:hover .group-hover\:text-emerald-500,
+.group:hover .group-hover\:text-emerald-600 {
+  color: var(--color-accent) !important;
+}
+
+/* Solid Background Buttons & Pills */
+.bg-emerald-500,
+.bg-emerald-600,
+.bg-emerald-700,
+.bg-emerald-800,
+.bg-accent,
+.bg-primary-btn,
+.bg-champagne-btn {
+  background-color: var(--color-accent) !important;
+  color: #FFFFFF !important;
+  border-color: var(--color-accent) !important;
+}
+
+.bg-emerald-500 *,
+.bg-emerald-600 *,
+.bg-emerald-700 *,
+.bg-emerald-800 *,
+.bg-accent *,
+.bg-primary-btn *,
+.bg-champagne-btn * {
+  color: inherit !important;
+}
+
+.hover\:bg-emerald-500:hover,
+.hover\:bg-emerald-600:hover,
+.hover\:bg-emerald-700:hover,
+.hover\:bg-emerald-800:hover,
+.hover\:bg-emerald-900:hover,
+.bg-emerald-600:hover,
+.bg-primary-btn:hover,
+.bg-champagne-btn:hover {
+  background-color: var(--color-accent-hover) !important;
+  border-color: var(--color-accent-hover) !important;
+  color: #FFFFFF !important;
+}
+
+/* Sub-Panels & Badges (bg-emerald light & dark tints) */
+.bg-emerald-50,
+.bg-emerald-100,
+.bg-emerald-200,
+.bg-emerald-300\/20,
+.bg-emerald-400\/20,
+.bg-emerald-500\/10,
+.bg-emerald-500\/20,
+.bg-emerald-500\/30,
+.bg-emerald-950,
+.bg-emerald-900,
+.bg-emerald-950\/80,
+.bg-emerald-950\/90,
+.bg-emerald-950\/70,
+.bg-emerald-900\/40,
+.bg-emerald-900\/50,
+.bg-emerald-900\/80,
+.bg-emerald-900\/90 {
+  background-color: var(--color-accent-bg, rgba(200, 169, 107, 0.15)) !important;
+  border-color: var(--color-accent-border, rgba(200, 169, 107, 0.35)) !important;
+}
+
+/* Border Accents */
+.border-emerald-200,
+.border-emerald-300,
+.border-emerald-400,
+.border-emerald-500,
+.border-emerald-600,
+.border-emerald-700,
+.border-emerald-800,
+.border-emerald-900,
+.border-accent {
+  border-color: var(--color-accent-border, rgba(200, 169, 107, 0.35)) !important;
+}
+
+.hover\:border-emerald-400:hover,
+.hover\:border-emerald-500:hover,
+.hover\:border-emerald-600:hover,
+.group:hover .group-hover\:border-emerald-500,
+.group:hover .group-hover\:border-emerald-400 {
+  border-color: var(--color-accent) !important;
+}
+
+/* Focus Rings & Selection */
+.focus\:border-emerald-500:focus,
+.focus\:border-emerald-400:focus {
+  border-color: var(--color-accent) !important;
+}
+
+.focus\:ring-emerald-500:focus,
+.focus\:ring-emerald-400:focus {
+  --tw-ring-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 2px var(--color-accent) !important;
+}
+
+.shadow-emerald-950 {
+  --tw-shadow-color: var(--color-accent-bg) !important;
+}
+
+::selection {
+  background-color: var(--color-accent) !important;
+  color: #FFFFFF !important;
+}
+
+::-moz-selection {
+  background-color: var(--color-accent) !important;
+  color: #FFFFFF !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF9F6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent) !important;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-hover) !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
