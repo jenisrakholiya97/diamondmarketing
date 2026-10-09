@@ -44,12 +44,12 @@ describe('Add Product Modal & Custom Diamonds Specification Test Suite', () => {
     // Check Photo Upload Section (Distinct header and subtext)
     expect(screen.getByText(/Photo Upload Section/i)).toBeInTheDocument();
     expect(screen.getByText(/Product Photography & Scan Images \(Separated Section\)/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Or paste photo image URL\.\.\./i)).toBeInTheDocument();
+    expect(screen.getByTestId('photo-file-input')).toBeInTheDocument();
 
     // Check Video Upload Section (Distinct header and subtext)
     expect(screen.getByText(/Video Upload Section/i)).toBeInTheDocument();
     expect(screen.getByText(/360° HD Spin Video & MP4 \(Separated Section\)/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Or paste video MP4 URL/i)).toBeInTheDocument();
+    expect(screen.getByTestId('video-file-input')).toBeInTheDocument();
 
     // Ensure Photo and Video sections are strictly distinct elements
     const photoSectionHeader = screen.getByText(/Photo Upload Section/i);
@@ -57,7 +57,7 @@ describe('Add Product Modal & Custom Diamonds Specification Test Suite', () => {
     expect(photoSectionHeader).not.toEqual(videoSectionHeader);
   });
 
-  it('case 3: allows single diamond creation with custom photo URL and video URL, saving to localStorage & publishing to Products page', async () => {
+  it('case 3: allows single diamond creation with file uploads, saving to localStorage & publishing to Products page', async () => {
     renderProductsPageWithModal();
 
     // Open Modal
@@ -73,15 +73,15 @@ describe('Add Product Modal & Custom Diamonds Specification Test Suite', () => {
     const priceInput = screen.getByPlaceholderText(/1500.00/i);
     fireEvent.change(priceInput, { target: { value: '2200.00' } });
 
-    // Add Photo URL
-    const photoUrlInput = screen.getByPlaceholderText(/Or paste photo image URL\.\.\./i);
-    fireEvent.change(photoUrlInput, { target: { value: 'https://example.com/custom_diamond.jpg' } });
-    fireEvent.click(screen.getByRole('button', { name: /^Add Photo$/i }));
+    // Upload Photo File
+    const photoInput = screen.getByTestId('photo-file-input');
+    const photoFile = new File(['dummy photo'], 'custom_diamond.jpg', { type: 'image/jpeg' });
+    fireEvent.change(photoInput, { target: { files: [photoFile] } });
 
-    // Add Video URL
-    const videoUrlInput = screen.getByPlaceholderText(/Or paste video MP4 URL/i);
-    fireEvent.change(videoUrlInput, { target: { value: '/videos/emerald_360.mp4' } });
-    fireEvent.click(screen.getByRole('button', { name: /^Set Video$/i }));
+    // Upload Video File
+    const videoInput = screen.getByTestId('video-file-input');
+    const videoFile = new File(['dummy video'], 'emerald_360.mp4', { type: 'video/mp4' });
+    fireEvent.change(videoInput, { target: { files: [videoFile] } });
 
     // Submit form
     fireEvent.click(screen.getByRole('button', { name: /Publish Diamond to Store/i }));

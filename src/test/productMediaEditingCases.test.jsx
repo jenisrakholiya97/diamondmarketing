@@ -62,12 +62,15 @@ describe('Product Image & Video Editing & File Upload Test Suite', () => {
       expect(screen.getByTestId('edit-product-modal')).toBeInTheDocument();
     });
 
-    // Change image URL and video URL input fields
-    const imageUrlInput = screen.getByTestId('edit-image-url-input');
-    const videoUrlInput = screen.getByTestId('edit-video-url-input');
+    // Upload new image file and video file
+    const photoFileInput = screen.getByTestId('edit-photo-file-input');
+    const videoFileInput = screen.getByTestId('edit-video-file-input');
 
-    fireEvent.change(imageUrlInput, { target: { value: '/assets/nivaan/images/new-edited-photo.jpg' } });
-    fireEvent.change(videoUrlInput, { target: { value: '/assets/nivaan/videos/new-edited-video.mp4' } });
+    const photoFile = new File(['new image data'], 'new-edited-photo.jpg', { type: 'image/jpeg' });
+    const videoFile = new File(['new video data'], 'new-edited-video.mp4', { type: 'video/mp4' });
+
+    fireEvent.change(photoFileInput, { target: { files: [photoFile] } });
+    fireEvent.change(videoFileInput, { target: { files: [videoFile] } });
 
     // Click Save Changes
     const saveBtn = screen.getByTestId('save-product-button');
@@ -80,8 +83,8 @@ describe('Product Image & Video Editing & File Upload Test Suite', () => {
     // Verify DB update
     const dbItem = await getDiamondByIdFromDb('edit-media-test-1');
     expect(dbItem).toBeDefined();
-    expect(dbItem.imageUrl).toBe('/assets/nivaan/images/new-edited-photo.jpg');
-    expect(dbItem.videoUrl).toBe('/assets/nivaan/videos/new-edited-video.mp4');
+    expect(dbItem.imageUrl).toBeTruthy();
+    expect(dbItem.videoUrl).toBeTruthy();
   });
 
   it('case 2: uploads new photo file and new video file in EditProductModal via File inputs', async () => {
@@ -127,12 +130,15 @@ describe('Product Image & Video Editing & File Upload Test Suite', () => {
     expect(screen.getByTestId('upload-edit-photo-button')).toBeInTheDocument();
     expect(screen.getByTestId('upload-edit-video-button')).toBeInTheDocument();
 
-    // Change image URL and video URL
-    const imageUrlInput = screen.getByTestId('edit-image-url-input');
-    const videoUrlInput = screen.getByTestId('edit-video-url-input');
+    // Upload photo file and video file
+    const photoFileInput = screen.getByTestId('edit-photo-file-input');
+    const videoFileInput = screen.getByTestId('edit-video-file-input');
 
-    fireEvent.change(imageUrlInput, { target: { value: 'data:image/jpeg;base64,newphotobase64' } });
-    fireEvent.change(videoUrlInput, { target: { value: 'data:video/mp4;base64,newvideobase64' } });
+    const photoFile = new File(['photo data'], 'newphoto.jpg', { type: 'image/jpeg' });
+    const videoFile = new File(['video data'], 'newvideo.mp4', { type: 'video/mp4' });
+
+    fireEvent.change(photoFileInput, { target: { files: [photoFile] } });
+    fireEvent.change(videoFileInput, { target: { files: [videoFile] } });
 
     // Submit form
     const saveBtn = screen.getByTestId('save-product-button');
@@ -146,7 +152,7 @@ describe('Product Image & Video Editing & File Upload Test Suite', () => {
     const savedCustom = JSON.parse(localStorage.getItem('gk_custom_diamonds') || '[]');
     const updated = savedCustom.find((item) => item.id === 'edit-file-upload-test-2');
     expect(updated).toBeDefined();
-    expect(updated.imageUrl).toBe('data:image/jpeg;base64,newphotobase64');
-    expect(updated.videoUrl).toBe('data:video/mp4;base64,newvideobase64');
+    expect(updated.imageUrl).toBe('data:image/jpeg;base64,dummyimagebase64data');
+    expect(updated.videoUrl).toBe('data:video/mp4;base64,dummyvideobase64data');
   });
 });

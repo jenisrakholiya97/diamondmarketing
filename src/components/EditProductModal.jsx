@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Edit, X, Save, Sparkles, Image as ImageIcon, Video as VideoIcon, FileText, Upload, Play, Pause, Trash2, Plus, CheckCircle } from 'lucide-react';
+import { UnsavedChangesModal } from './UnsavedChangesModal';
 
 const SHAPE_OPTIONS = [
   'Round Brilliant',
@@ -21,6 +22,8 @@ const CUT_OPTIONS = ['Ideal', 'Excellent', 'Very Good', 'Good', '3X EX'];
 const CERT_OPTIONS = ['IGI Certified', 'GIA Certified', 'GCAL 8X Certified', 'HRD Certified'];
 
 export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
+  const [isDirty, setIsDirty] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [form, setForm] = useState({
     title: '',
     shape: 'Round Brilliant',
@@ -88,7 +91,25 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
       videoUrl: initialVideo,
       images: initialImages
     });
+    setIsDirty(false);
+    setShowUnsavedModal(false);
   }, [isOpen, diamond]);
+
+  const handleAttemptClose = () => {
+    if (isDirty) {
+      setShowUnsavedModal(true);
+      return;
+    }
+    setIsDirty(false);
+    setShowUnsavedModal(false);
+    onClose();
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowUnsavedModal(false);
+    setIsDirty(false);
+    onClose();
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -101,7 +122,7 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose();
+        handleAttemptClose();
       }
     };
 
@@ -114,12 +135,13 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
       }
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, isDirty, onClose]);
 
   if (!isOpen || !diamond) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setIsDirty(true);
     setForm((prev) => ({
       ...prev,
       [name]: value
@@ -131,6 +153,7 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
+    setIsDirty(true);
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -139,7 +162,7 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
           const newImages = [...(prev.images || []), resultUrl];
           return {
             ...prev,
-            imageUrl: prev.imageUrl ? prev.imageUrl : resultUrl,
+            imageUrl: resultUrl,
             images: newImages
           };
         });
@@ -153,6 +176,7 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsDirty(true);
     const reader = new FileReader();
     reader.onload = (event) => {
       const resultUrl = event.target.result;
@@ -168,6 +192,7 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
     e.preventDefault();
     if (!diamond) return;
 
+    setIsDirty(false);
     const numPrice = parseFloat(form.priceValue) || 0;
     const numCarat = parseFloat(form.caratValue) || 0;
     const formattedPrice = `$${numPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -203,7 +228,7 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
       className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 modal-backdrop-overlay animate-fadeIn"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          onClose();
+          handleAttemptClose();
         }
       }}
       onPointerDown={(e) => e.stopPropagation()}
@@ -237,7 +262,7 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleAttemptClose}
             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             data-testid="close-edit-modal-button"
             aria-label="Close modal"
@@ -469,7 +494,10 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
                     />
                     <button
                       type="button"
-                      onClick={() => setForm((prev) => ({ ...prev, imageUrl: '', images: [] }))}
+                      onClick={() => {
+                        setIsDirty(true);
+                        setForm((prev) => ({ ...prev, imageUrl: '', images: [] }));
+                      }}
                       className="absolute top-2 right-2 p-1.5 rounded-lg bg-rose-600 text-white shadow-md hover:bg-rose-500 transition cursor-pointer opacity-80 hover:opacity-100"
                       title="Remove photo"
                     >
@@ -485,18 +513,6 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
                     <span className="text-[11px] font-mono text-slate-500">No image set. Click to upload</span>
                   </div>
                 )}
-
-                <div>
-                  <input
-                    type="text"
-                    name="imageUrl"
-                    value={form.imageUrl}
-                    onChange={handleChange}
-                    placeholder="Or paste photo URL (https://...)"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-[11px] font-mono text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 outline-none"
-                    data-testid="edit-image-url-input"
-                  />
-                </div>
               </div>
 
               {/* 360° Video Upload & Change */}
@@ -556,7 +572,10 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setForm((prev) => ({ ...prev, videoUrl: '' }))}
+                      onClick={() => {
+                        setIsDirty(true);
+                        setForm((prev) => ({ ...prev, videoUrl: '' }));
+                      }}
                       className="absolute top-2 right-2 p-1.5 rounded-lg bg-rose-600 text-white shadow-md hover:bg-rose-500 transition cursor-pointer opacity-80 hover:opacity-100"
                       title="Remove video"
                     >
@@ -572,18 +591,6 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
                     <span className="text-[11px] font-mono text-slate-500">No 360° video set. Click to upload</span>
                   </div>
                 )}
-
-                <div>
-                  <input
-                    type="text"
-                    name="videoUrl"
-                    value={form.videoUrl}
-                    onChange={handleChange}
-                    placeholder="Or paste 360° video URL (/videos/...)"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-[11px] font-mono text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 outline-none"
-                    data-testid="edit-video-url-input"
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -592,7 +599,7 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleAttemptClose}
               className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs rounded-xl transition cursor-pointer"
               data-testid="cancel-edit-button"
             >
@@ -609,6 +616,12 @@ export const EditProductModal = ({ isOpen, diamond, onClose, onSave }) => {
           </div>
         </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showUnsavedModal}
+        onClose={() => setShowUnsavedModal(false)}
+        onConfirm={handleConfirmDiscard}
+      />
     </div>
   );
 };

@@ -2,7 +2,25 @@
 // Strictly adhering to trade-to-trade (B2B) compliance rules.
 
 export const THEME_COLORS = [
-  { id: 'diamond-luxe', label: 'Diamond Luxe', hex: '#C8A96B' },
+  {
+    id: 'diamond-luxe',
+    label: 'Diamond Luxe',
+    hex: '#C8A96B',
+    lightHex: '#E7D7B4',
+    darkHex: '#8C6832',
+    shades: {
+      50: '#FAF7F2',
+      100: '#F4ECE0',
+      200: '#E7D7B4',
+      300: '#D8BF8C',
+      400: '#D4B87C',
+      500: '#C8A96B',
+      600: '#B59453',
+      700: '#8C6832',
+      800: '#6B4D22',
+      900: '#4A3414',
+    }
+  },
 ];
 
 export const SITE_CONFIG = {

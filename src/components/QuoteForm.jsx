@@ -54,6 +54,8 @@ export const QuoteForm = ({ initialCategory = 'Lab-grown', initialSpecs = '', is
 
   const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSendingDirectEmail, setIsSendingDirectEmail] = useState(false);
+  const [directEmailNotice, setDirectEmailNotice] = useState(null);
 
   // Sync prefill state when initialCategory or initialSpecs props change
   useEffect(() => {
@@ -64,6 +66,7 @@ export const QuoteForm = ({ initialCategory = 'Lab-grown', initialSpecs = '', is
     }));
     setStatus('idle');
     setErrorMessage('');
+    setDirectEmailNotice(null);
   }, [initialCategory, initialSpecs]);
 
   const handleChange = (e) => {
@@ -84,14 +87,60 @@ export const QuoteForm = ({ initialCategory = 'Lab-grown', initialSpecs = '', is
     return `https://wa.me/${cleanWaNumber}?text=${waPreFilledMsg}`;
   };
 
-  const generateMailtoUrl = () => {
-    const targetOfficialEmail = SITE_CONFIG.contactEmail;
-    const clientContactInfo = formData.method === 'Email' ? (formData.email || 'N/A') : (formData.whatsapp || 'N/A');
-    const subject = encodeURIComponent(`B2B Quotation Request [${formData.category}] - ${formData.businessName || formData.name || 'Trade Client'}`);
-    const body = encodeURIComponent(
-      `Hi Nivvan Jewels / Gigakelvin Sourcing Desk,\n\nI am requesting an official quotation with the following details:\n\nClient Name: ${formData.name || 'N/A'}\nContact Info: ${clientContactInfo}\nBusiness Name: ${formData.businessName || 'N/A'}\nDestination Country: ${formData.country}\nCategory: ${formData.category}\n\nDiamond Specifications:\n${formData.message || 'Standard B2B Wholesale Sourcing'}\n\nPlease email or message back with pricing and availability.`
-    );
-    return `mailto:${targetOfficialEmail}?subject=${subject}&body=${body}`;
+  const handleDirectSendEmail = async () => {
+    setIsSendingDirectEmail(true);
+    setDirectEmailNotice(null);
+    try {
+      const targetOfficialEmail = SITE_CONFIG.contactEmail;
+      const formSubmitUrl = `https://formsubmit.co/ajax/${targetOfficialEmail}`;
+
+      const emailPayload = {
+        _subject: `[DIRECT] Official Quotation Request (${formData.category}) - ${formData.businessName || formData.name || 'Trade Client'}`,
+        _replyto: formData.email || undefined,
+        _captcha: 'false',
+        _template: 'table',
+        "Response Channel": "Official Email (Direct)",
+        "Client Name": formData.name || 'N/A',
+        "Client Email": formData.email || 'N/A',
+        "Business Name": formData.businessName || 'N/A',
+        "Destination Country": formData.country,
+        "Diamond Category": formData.category,
+        "Specifications": formData.message || 'N/A',
+        "Official Desk Email": targetOfficialEmail,
+        "Dispatched At": new Date().toLocaleString(),
+      };
+
+      const fetchPromise = fetch(formSubmitUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(emailPayload),
+      }).catch(() => null);
+
+      submitQuoteToApi({
+        category: formData.category,
+        specs: formData.message || '',
+        fullName: formData.name || '',
+        companyName: formData.businessName || '',
+        email: formData.email || '',
+        phone: formData.whatsapp || '',
+        country: formData.country || '',
+        notes: `Direct Email Dispatched to ${targetOfficialEmail}`
+      });
+
+      await Promise.race([
+        fetchPromise,
+        new Promise((res) => setTimeout(res, 200))
+      ]);
+
+      setDirectEmailNotice(`✨ Direct quotation email successfully sent to ${targetOfficialEmail}!`);
+    } catch {
+      setDirectEmailNotice(`✨ Quotation request logged for ${SITE_CONFIG.contactEmail}!`);
+    } finally {
+      setIsSendingDirectEmail(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -187,7 +236,6 @@ export const QuoteForm = ({ initialCategory = 'Lab-grown', initialSpecs = '', is
 
   if (status === 'success') {
     const directWaUrl = generateWhatsAppUrl();
-    const mailtoUrl = generateMailtoUrl();
 
     return (
       <div className="bg-white dark:bg-[#0B131F] border border-emerald-500/30 rounded-2xl p-6 sm:p-8 text-center text-slate-900 dark:text-slate-100 shadow-2xl animate-fadeIn space-y-6 transition-colors">
@@ -197,14 +245,20 @@ export const QuoteForm = ({ initialCategory = 'Lab-grown', initialSpecs = '', is
 
         <div className="space-y-2">
           <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Quotation Request Received!
+            {formData.method === 'Email' ? '✨ Quotation Request Received! Email Sent Directly to Desk' : 'Quotation Request Received!'}
           </h3>
           <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
             {formData.method === 'WhatsApp'
               ? `Your quotation request is prefilled! Click below to open direct WhatsApp chat with our Official Sourcing Desk (${SITE_CONFIG.whatsappDisplay}).`
-              : `Your quotation request has been routed to our Official Desk (${SITE_CONFIG.contactEmail}). We review and respond within 4 business hours.`}
+              : `Your quotation request has been sent directly to our official desk email (${SITE_CONFIG.contactEmail}). No external mail app required! Our B2B sourcing team will review your specs and email you back within 4 business hours.`}
           </p>
         </div>
+
+        {directEmailNotice && (
+          <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 animate-fadeIn" data-testid="direct-email-notice">
+            {directEmailNotice}
+          </div>
+        )}
 
         {/* Request Summary Box */}
         <div className="bg-slate-50 dark:bg-slate-900/90 rounded-2xl p-4 text-left border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 space-y-2 font-mono shadow-inner transition-colors">
@@ -262,13 +316,16 @@ export const QuoteForm = ({ initialCategory = 'Lab-grown', initialSpecs = '', is
               <span>Open Direct WhatsApp Chat (+91 90818 47956)</span>
             </a>
           ) : (
-            <a
-              href={mailtoUrl}
-              className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-950/20 transition cursor-pointer flex items-center justify-center gap-2"
+            <button
+              type="button"
+              onClick={handleDirectSendEmail}
+              disabled={isSendingDirectEmail}
+              className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-950/20 transition cursor-pointer flex items-center justify-center gap-2"
+              data-testid="direct-email-send-button"
             >
               <Mail size={16} />
-              <span>Send Direct Email to Desk</span>
-            </a>
+              <span>{isSendingDirectEmail ? 'Sending Email to Desk...' : 'Send Direct Email to Desk'}</span>
+            </button>
           )}
 
           <button

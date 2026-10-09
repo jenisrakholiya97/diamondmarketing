@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
 import { DeleteProductModal } from './DeleteProductModal';
 import { EditProductModal } from './EditProductModal';
+import { UnsavedChangesModal } from './UnsavedChangesModal';
 import {
   X,
   Upload,
@@ -394,6 +395,8 @@ export const AddProductModal = () => {
   // Available Fields Schema Tab Filter
   const [schemaFilter, setSchemaFilter] = useState('All');
   const [copiedHeaders, setCopiedHeaders] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
   const toastTimerRef = useRef(null);
 
@@ -403,6 +406,29 @@ export const AddProductModal = () => {
     toastTimerRef.current = setTimeout(() => {
       setToastMessage(null);
     }, 4000);
+  };
+
+  useEffect(() => {
+    if (isAddProductModalOpen) {
+      setIsFormDirty(false);
+      setShowUnsavedModal(false);
+    }
+  }, [isAddProductModalOpen]);
+
+  const handleAttemptClose = () => {
+    if (isFormDirty) {
+      setShowUnsavedModal(true);
+      return;
+    }
+    setIsFormDirty(false);
+    setShowUnsavedModal(false);
+    closeAddProductModal();
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowUnsavedModal(false);
+    setIsFormDirty(false);
+    closeAddProductModal();
   };
 
   useEffect(() => {
@@ -423,7 +449,7 @@ export const AddProductModal = () => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        closeAddProductModal();
+        handleAttemptClose();
       }
     };
 
@@ -436,13 +462,14 @@ export const AddProductModal = () => {
       }
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
     };
-  }, [isAddProductModalOpen, closeAddProductModal]);
+  }, [isAddProductModalOpen, isFormDirty, closeAddProductModal]);
 
   if (!isAddProductModalOpen) return null;
 
   // Single Form Input Handler
   const handleSingleFormChange = (e) => {
     const { name, value } = e.target;
+    setIsFormDirty(true);
     setSingleForm((prev) => ({
       ...prev,
       [name]: value
@@ -452,6 +479,7 @@ export const AddProductModal = () => {
   // Photo Upload Helpers (SEPARATE SECTION)
   const handlePhotoFileUpload = (e) => {
     const files = Array.from(e.target.files || []);
+    if (files.length > 0) setIsFormDirty(true);
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -464,12 +492,14 @@ export const AddProductModal = () => {
 
   const handleAddPhotoByUrl = () => {
     if (!photoInputUrl.trim()) return;
+    setIsFormDirty(true);
     setPhotoUrls((prev) => [...prev, photoInputUrl.trim()]);
     setPhotoInputUrl('');
     showToast('Photo URL added to gallery.');
   };
 
   const handleRemovePhoto = (index) => {
+    setIsFormDirty(true);
     setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -477,6 +507,7 @@ export const AddProductModal = () => {
   const handleVideoFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      setIsFormDirty(true);
       const reader = new FileReader();
       reader.onload = (event) => {
         setVideoUrl(event.target.result);
@@ -488,6 +519,7 @@ export const AddProductModal = () => {
 
   const handleAddVideoByUrl = () => {
     if (!videoInputUrl.trim()) return;
+    setIsFormDirty(true);
     setVideoUrl(videoInputUrl.trim());
     setVideoInputUrl('');
     showToast('Video URL updated! Play preview below to verify.');
@@ -543,14 +575,13 @@ export const AddProductModal = () => {
     };
 
     addCustomDiamond(newDiamond);
+    setIsFormDirty(false);
     showToast(`✨ Diamond "${formattedTitle}" successfully created & published to Products Page!`);
 
     // Reset photo & video state
     setPhotoUrls([]);
     setVideoUrl('/videos/emerald_360.mp4');
   };
-
-
 
   const copyCsvHeadersToClipboard = () => {
     const headers = FIELD_SCHEMA.map((f) => f.key).join(',');
@@ -571,7 +602,7 @@ export const AddProductModal = () => {
       className="fixed inset-0 z-[9990] flex items-center justify-center p-3 sm:p-4 md:p-6 modal-backdrop-overlay animate-fadeIn"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          closeAddProductModal();
+          handleAttemptClose();
         }
       }}
       onPointerDown={(e) => e.stopPropagation()}
@@ -617,7 +648,7 @@ export const AddProductModal = () => {
 
           <div className="flex items-center gap-2 self-end sm:self-auto">
             <button
-              onClick={closeAddProductModal}
+              onClick={handleAttemptClose}
               className="p-2.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-200 hover:bg-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 rounded-2xl border border-slate-300 dark:border-slate-800 transition cursor-pointer"
               aria-label="Close add product modal"
             >
@@ -926,6 +957,7 @@ export const AddProductModal = () => {
                       type="file"
                       accept="image/*"
                       multiple
+                      data-testid="photo-file-input"
                       onChange={handlePhotoFileUpload}
                       className="hidden"
                     />
@@ -936,24 +968,6 @@ export const AddProductModal = () => {
                     <p className="text-[10px] text-slate-500 dark:text-slate-400">
                       PNG, JPG, WEBP (Multiple allowed)
                     </p>
-                  </div>
-
-                  {/* Photo URL Input */}
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      value={photoInputUrl}
-                      onChange={(e) => setPhotoInputUrl(e.target.value)}
-                      placeholder="Or paste photo image URL..."
-                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddPhotoByUrl}
-                      className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold cursor-pointer shrink-0"
-                    >
-                      Add Photo
-                    </button>
                   </div>
 
                   {/* Photo Gallery Grid Preview */}
@@ -1021,24 +1035,6 @@ export const AddProductModal = () => {
                     <p className="text-[10px] text-slate-500 dark:text-slate-400">
                       MP4, WEBM format (360 HD spin recommended)
                     </p>
-                  </div>
-
-                  {/* Video URL Input */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={videoInputUrl}
-                      onChange={(e) => setVideoInputUrl(e.target.value)}
-                      placeholder="Or paste video MP4 URL (e.g. /videos/emerald_360.mp4)..."
-                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddVideoByUrl}
-                      className="px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold cursor-pointer shrink-0"
-                    >
-                      Set Video
-                    </button>
                   </div>
 
                   {/* Live Video Preview Box */}
@@ -1367,6 +1363,13 @@ export const AddProductModal = () => {
               showToast(`Updated item ${updated.title || updated.id}`);
               setEditingItem(null);
             }}
+          />
+
+          {/* Unsaved Changes Confirmation Modal */}
+          <UnsavedChangesModal
+            isOpen={showUnsavedModal}
+            onClose={() => setShowUnsavedModal(false)}
+            onConfirm={handleConfirmDiscard}
           />
         </div>
       </div>

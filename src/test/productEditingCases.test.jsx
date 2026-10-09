@@ -287,8 +287,12 @@ describe('Comprehensive Product Editing & Synchronization Test Suite', () => {
     const titleInput = screen.getByTestId('edit-title-input');
     fireEvent.change(titleInput, { target: { value: 'Temporary Title Should Not Save' } });
 
-    // Click Cancel button
+    // Click Cancel button (opens UnsavedChangesModal when dirty)
     fireEvent.click(screen.getByTestId('cancel-edit-button'));
+
+    // Confirm discard in custom confirmation modal
+    expect(screen.getByTestId('unsaved-changes-modal-overlay')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('discard-changes-button'));
 
     // Modal should close and original title remain
     await waitFor(() => {

@@ -41,6 +41,25 @@
   --color-text-secondary: #6F706F;
   --color-border: #DDDCD7;
   --color-dark: #0D0F12;
+
+  /* Theme Accent Shade Scale (Light Tints & Dark Shades in Same Theme Spectrum) */
+  --color-accent-50: #FAF7F2;
+  --color-accent-100: #F4ECE0;
+  --color-accent-200: #E7D7B4;
+  --color-accent-300: #D8BF8C;
+  --color-accent-400: #D4B87C;
+  --color-accent-500: #C8A96B;
+  --color-accent-600: #B59453;
+  --color-accent-700: #8C6832;
+  --color-accent-800: #6B4D22;
+  --color-accent-900: #4A3414;
+
+  /* Accent Tone Alias Tokens */
+  --color-accent-light: #E7D7B4;
+  --color-accent-dark: #8C6832;
+  --color-accent-light-bg: rgba(200, 169, 107, 0.08);
+  --color-accent-subtle: rgba(200, 169, 107, 0.12);
+  --color-accent-glow: rgba(200, 169, 107, 0.25);
 }
 
 /* ==========================================
@@ -58,6 +77,23 @@ html.theme-diamond-luxe {
   --color-border: #DDDCD7;
   --color-text-secondary: #6F706F;
   --color-dark: #0D0F12;
+
+  /* Theme Shade Scale */
+  --color-accent-50: #FAF7F2;
+  --color-accent-100: #F4ECE0;
+  --color-accent-200: #E7D7B4;
+  --color-accent-300: #D8BF8C;
+  --color-accent-400: #D4B87C;
+  --color-accent-500: #C8A96B;
+  --color-accent-600: #B59453;
+  --color-accent-700: #8C6832;
+  --color-accent-800: #6B4D22;
+  --color-accent-900: #4A3414;
+  --color-accent-light: #E7D7B4;
+  --color-accent-dark: #8C6832;
+  --color-accent-light-bg: rgba(200, 169, 107, 0.08);
+  --color-accent-subtle: rgba(200, 169, 107, 0.12);
+  --color-accent-glow: rgba(200, 169, 107, 0.25);
 }
 
 html[data-theme-color="gold"],
@@ -66,6 +102,23 @@ html.theme-gold {
   --color-accent-hover: #b38d4d;
   --color-accent-bg: rgba(198, 161, 91, 0.15);
   --color-accent-border: rgba(198, 161, 91, 0.35);
+
+  /* Gold Theme Shade Scale */
+  --color-accent-50: #FAF7F2;
+  --color-accent-100: #F4ECE0;
+  --color-accent-200: #E7D7B4;
+  --color-accent-300: #D8BF8C;
+  --color-accent-400: #D4B87C;
+  --color-accent-500: #c6a15b;
+  --color-accent-600: #b38d4d;
+  --color-accent-700: #916F38;
+  --color-accent-800: #70542B;
+  --color-accent-900: #523C1E;
+  --color-accent-light: #E7D7B4;
+  --color-accent-dark: #916F38;
+  --color-accent-light-bg: rgba(198, 161, 91, 0.08);
+  --color-accent-subtle: rgba(198, 161, 91, 0.12);
+  --color-accent-glow: rgba(198, 161, 91, 0.25);
 }
 
 @layer base {
@@ -259,17 +312,33 @@ html.light .to-\[\#0B0F17\] {
    COMPREHENSIVE GLOBAL ACCENT OVERRIDES FOR EVERY SMALL ELEMENT
    ========================================================= */
 
-/* Text Colors */
+/* Text Colors & Shade Variants */
+.text-emerald-100,
+.text-emerald-200,
 .text-emerald-300,
+.text-accent-light,
+.text-accent-100,
+.text-accent-200,
+.text-accent-300 {
+  color: var(--color-accent-light, #E7D7B4) !important;
+}
+
 .text-emerald-400,
 .text-emerald-500,
 .text-emerald-600,
-.text-emerald-700,
-.text-emerald-800,
-.text-emerald-900,
 .text-accent,
 .text-champagne {
   color: var(--color-accent) !important;
+}
+
+.text-emerald-700,
+.text-emerald-800,
+.text-emerald-900,
+.text-accent-dark,
+.text-accent-700,
+.text-accent-800,
+.text-accent-900 {
+  color: var(--color-accent-dark, #8C6832) !important;
 }
 
 .hover\:text-emerald-400:hover,
@@ -277,7 +346,15 @@ html.light .to-\[\#0B0F17\] {
 .hover\:text-emerald-500:hover,
 .hover\:text-emerald-600:hover,
 .hover\:text-accent:hover {
-  color: var(--color-accent) !important;
+  color: var(--color-accent-hover, #9E7B43) !important;
+}
+
+.hover\:text-accent-light:hover {
+  color: var(--color-accent-light, #E7D7B4) !important;
+}
+
+.hover\:text-accent-dark:hover {
+  color: var(--color-accent-dark, #8C6832) !important;
 }
 
 .group:hover .group-hover\:text-emerald-400,
@@ -287,11 +364,9 @@ html.light .to-\[\#0B0F17\] {
   color: var(--color-accent) !important;
 }
 
-/* Solid Background Buttons & Pills */
+/* Solid Background Buttons, Pills & Shades */
 .bg-emerald-500,
 .bg-emerald-600,
-.bg-emerald-700,
-.bg-emerald-800,
 .bg-accent,
 .bg-primary-btn,
 .bg-champagne-btn {
@@ -300,10 +375,25 @@ html.light .to-\[\#0B0F17\] {
   border-color: var(--color-accent) !important;
 }
 
+.bg-accent-light,
+.bg-accent-100,
+.bg-accent-200 {
+  background-color: var(--color-accent-light-bg, rgba(200, 169, 107, 0.12)) !important;
+  color: var(--color-accent-dark, #8C6832) !important;
+  border-color: var(--color-accent-border, rgba(200, 169, 107, 0.35)) !important;
+}
+
+.bg-accent-dark,
+.bg-accent-700,
+.bg-accent-800,
+.bg-accent-900 {
+  background-color: var(--color-accent-dark, #8C6832) !important;
+  color: #FFFFFF !important;
+  border-color: var(--color-accent-dark, #8C6832) !important;
+}
+
 .bg-emerald-500 *,
 .bg-emerald-600 *,
-.bg-emerald-700 *,
-.bg-emerald-800 *,
 .bg-accent *,
 .bg-primary-btn *,
 .bg-champagne-btn * {
@@ -317,13 +407,24 @@ html.light .to-\[\#0B0F17\] {
 .hover\:bg-emerald-900:hover,
 .bg-emerald-600:hover,
 .bg-primary-btn:hover,
-.bg-champagne-btn:hover {
+.bg-champagne-btn:hover,
+.hover\:bg-accent:hover {
   background-color: var(--color-accent-hover) !important;
   border-color: var(--color-accent-hover) !important;
   color: #FFFFFF !important;
 }
 
-/* Sub-Panels & Badges (bg-emerald light & dark tints) */
+.hover\:bg-accent-light:hover {
+  background-color: var(--color-accent-light, #E7D7B4) !important;
+  color: #171717 !important;
+}
+
+.hover\:bg-accent-dark:hover {
+  background-color: var(--color-accent-dark, #8C6832) !important;
+  color: #FFFFFF !important;
+}
+
+/* Sub-Panels, Badges & Light Tints (bg-emerald light & dark tints) */
 .bg-emerald-50,
 .bg-emerald-100,
 .bg-emerald-200,
@@ -340,21 +441,32 @@ html.light .to-\[\#0B0F17\] {
 .bg-emerald-900\/40,
 .bg-emerald-900\/50,
 .bg-emerald-900\/80,
-.bg-emerald-900\/90 {
+.bg-emerald-900\/90,
+.bg-accent-subtle,
+.bg-accent-light-bg {
   background-color: var(--color-accent-bg, rgba(200, 169, 107, 0.15)) !important;
   border-color: var(--color-accent-border, rgba(200, 169, 107, 0.35)) !important;
 }
 
-/* Border Accents */
+/* Border Accents & Shades */
 .border-emerald-200,
 .border-emerald-300,
+.border-accent-light,
+.border-accent-200,
+.border-accent-300 {
+  border-color: var(--color-accent-border, rgba(200, 169, 107, 0.35)) !important;
+}
+
 .border-emerald-400,
 .border-emerald-500,
 .border-emerald-600,
 .border-emerald-700,
 .border-emerald-800,
 .border-emerald-900,
-.border-accent {
+.border-accent,
+.border-accent-dark,
+.border-accent-700,
+.border-accent-800 {
   border-color: var(--color-accent-border, rgba(200, 169, 107, 0.35)) !important;
 }
 

@@ -94,9 +94,17 @@ describe('B2B Quote Form Component', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Quotation Request Received/i)).toBeInTheDocument();
+      expect(screen.getByText(/Quotation Request Received! Email Sent Directly to Desk/i)).toBeInTheDocument();
       expect(screen.getByText(/bench@jewelrystudio.com/i)).toBeInTheDocument();
-      expect(screen.getAllByText((content) => content.includes('jenis.rakholiya9081@gmail.com')).length).toBeGreaterThan(0);
+      expect(screen.getByTestId('direct-email-send-button')).toBeInTheDocument();
+    });
+
+    // Verify clicking "Send Direct Email to Desk" dispatches directly without mailto link popup
+    const directEmailBtn = screen.getByTestId('direct-email-send-button');
+    fireEvent.click(directEmailBtn);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('direct-email-notice')).toBeInTheDocument();
     });
   });
 

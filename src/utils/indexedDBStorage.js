@@ -68,10 +68,10 @@ export async function deleteFromIndexedDB(id) {
 }
 
 export async function loadFromIndexedDB() {
+  const memoryItems = Array.from(memoryCustomStore.values());
   try {
     const db = await openDB();
-    if (!db) return Array.from(memoryCustomStore.values());
-    if (!db.objectStoreNames.contains(STORE_CUSTOM)) return Array.from(memoryCustomStore.values());
+    if (!db || !db.objectStoreNames.contains(STORE_CUSTOM)) return memoryItems;
     const tx = db.transaction(STORE_CUSTOM, 'readonly');
     const store = tx.objectStore(STORE_CUSTOM);
     const request = store.getAll();
@@ -79,32 +79,38 @@ export async function loadFromIndexedDB() {
       request.onsuccess = () => {
         const res = request.result;
         if (Array.isArray(res) && res.length > 0) {
-          res.forEach((item) => memoryCustomStore.set(item.id, item));
+          memoryCustomStore.clear();
+          res.forEach((item) => { if (item && item.id) memoryCustomStore.set(item.id, item); });
+          resolve(Array.from(memoryCustomStore.values()));
+        } else {
+          resolve(memoryItems);
         }
-        resolve(Array.from(memoryCustomStore.values()));
       };
-      request.onerror = () => resolve(Array.from(memoryCustomStore.values()));
+      request.onerror = () => resolve(memoryItems);
     });
   } catch {
-    return Array.from(memoryCustomStore.values());
+    return memoryItems;
   }
 }
 
 export async function saveDbDiamondsToIndexedDB(diamonds) {
-  memoryDbStore.clear();
-  if (Array.isArray(diamonds)) {
-    diamonds.forEach((d) => {
-      if (d && d.id) memoryDbStore.set(d.id, d);
-    });
-  }
+  const items = Array.isArray(diamonds) ? diamonds : (diamonds ? [diamonds] : []);
+  items.forEach((d) => {
+    const key = d && (d.id || d._id);
+    if (d && key) {
+      memoryDbStore.set(key, { ...d, id: key });
+    }
+  });
   try {
     const db = await openDB();
-    if (!db) return true;
+    if (!db || !db.objectStoreNames.contains(STORE_DB_DIAMONDS)) return true;
     const tx = db.transaction(STORE_DB_DIAMONDS, 'readwrite');
     const store = tx.objectStore(STORE_DB_DIAMONDS);
-    store.clear();
-    diamonds.forEach((d) => {
-      store.put(d);
+    items.forEach((d) => {
+      const key = d && (d.id || d._id);
+      if (d && key) {
+        store.put({ ...d, id: key });
+      }
     });
     return new Promise((resolve) => {
       tx.oncomplete = () => resolve(true);
@@ -116,24 +122,37 @@ export async function saveDbDiamondsToIndexedDB(diamonds) {
 }
 
 export async function loadDbDiamondsFromIndexedDB() {
+  const memoryItems = Array.from(memoryDbStore.values());
   try {
     const db = await openDB();
-    if (!db) return Array.from(memoryDbStore.values());
-    if (!db.objectStoreNames.contains(STORE_DB_DIAMONDS)) return Array.from(memoryDbStore.values());
+    if (!db || !db.objectStoreNames.contains(STORE_DB_DIAMONDS)) {
+      return memoryItems;
+    }
     const tx = db.transaction(STORE_DB_DIAMONDS, 'readonly');
     const store = tx.objectStore(STORE_DB_DIAMONDS);
     const request = store.getAll();
     return new Promise((resolve) => {
       request.onsuccess = () => {
-        const res = request.result;
-        if (Array.isArray(res) && res.length > 0) {
-          res.forEach((item) => memoryDbStore.set(item.id, item));
-        }
-        resolve(Array.from(memoryDbStore.values()));
+        const res = request.result || [];
+        const map = new Map();
+        memoryItems.forEach((item) => {
+          const key = item && (item.id || item._id);
+          if (item && key) map.set(key, item);
+        });
+        res.forEach((item) => {
+          const key = item && (item.id || item._id);
+          if (item && key) map.set(key, item);
+        });
+        const merged = Array.from(map.values());
+        merged.forEach((item) => {
+          const key = item && (item.id || item._id);
+          if (item && key) memoryDbStore.set(key, item);
+        });
+        resolve(merged.length > 0 ? merged : memoryItems);
       };
-      request.onerror = () => resolve(Array.from(memoryDbStore.values()));
+      request.onerror = () => resolve(memoryItems);
     });
   } catch {
-    return Array.from(memoryDbStore.values());
+    return memoryItems;
   }
 }

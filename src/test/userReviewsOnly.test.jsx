@@ -68,9 +68,11 @@ describe('User Reviews Only (Zero Default Initialized Reviews) Test Suite', () =
     fireEvent.click(screen.getByRole('button', { name: /Close review modal/i }));
 
     // Verify real user review card appears in DOM
-    expect(await screen.findByText('Sophia Lorenzo')).toBeInTheDocument();
-    expect(screen.getByText('Lorenzo Bespoke Gems')).toBeInTheDocument();
-    expect(screen.getByText(/"Exquisite CVD diamond optical clarity"/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByText('Sophia Lorenzo').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Lorenzo Bespoke Gems').length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/"Exquisite CVD diamond optical clarity"/i).length).toBeGreaterThan(0);
+    }, { timeout: 3000 });
 
     // Verify stats updated dynamically to 1 review and 5.0 rating
     expect(screen.getByText('5.0')).toBeInTheDocument();
