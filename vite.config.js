@@ -3,11 +3,9 @@ import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
-
 function localApiFallbackPlugin() {
   const fallbackPath = path.resolve(__dirname, 'server/data/fallback_diamonds.json');
   const publicFallbackPath = path.resolve(__dirname, 'public/fallback_diamonds.json');
-
   const readFallback = () => {
     try {
       if (fs.existsSync(fallbackPath)) {
@@ -21,7 +19,6 @@ function localApiFallbackPlugin() {
     }
     return [];
   };
-
   const saveBase64MediaToFile = (dataUrl, folder, filenamePrefix) => {
     if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
       return dataUrl;
@@ -32,15 +29,12 @@ function localApiFallbackPlugin() {
       const mime = match[1];
       const base64Data = match[2];
       let ext = 'bin';
-      if (mime.includes('mp4')) ext = 'mp4';
-      else if (mime.includes('webm')) ext = 'webm';
-      else if (mime.includes('png')) ext = 'png';
-      else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg';
-      else if (mime.includes('webp')) ext = 'webp';
-
+      if (mime.includes('mp4')) ext = 'mp4';else if (mime.includes('webm')) ext = 'webm';else if (mime.includes('png')) ext = 'png';else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg';else if (mime.includes('webp')) ext = 'webp';
       const dir = path.resolve(__dirname, 'public/assets/nivaan', folder);
       if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+        fs.mkdirSync(dir, {
+          recursive: true
+        });
       }
       const filename = `${filenamePrefix}.${ext}`;
       const filePath = path.join(dir, filename);
@@ -51,10 +45,11 @@ function localApiFallbackPlugin() {
       return dataUrl;
     }
   };
-
-  const writeFallback = (data) => {
+  const writeFallback = data => {
     try {
-      fs.mkdirSync(path.dirname(fallbackPath), { recursive: true });
+      fs.mkdirSync(path.dirname(fallbackPath), {
+        recursive: true
+      });
       fs.writeFileSync(fallbackPath, JSON.stringify(data, null, 2), 'utf8');
       if (fs.existsSync(path.dirname(publicFallbackPath))) {
         fs.writeFileSync(publicFallbackPath, JSON.stringify(data, null, 2), 'utf8');
@@ -65,18 +60,18 @@ function localApiFallbackPlugin() {
       return false;
     }
   };
-
   let backendOnline = null;
   let lastCheck = 0;
-
   const isBackendAlive = () => {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const now = Date.now();
       if (backendOnline !== null && now - lastCheck < 2000) {
         return resolve(backendOnline);
       }
       lastCheck = now;
-      const req = http.get('http://127.0.0.1:5000/api/health', { timeout: 300 }, (res) => {
+      const req = http.get('http://127.0.0.1:5000/api/health', {
+        timeout: 300
+      }, res => {
         backendOnline = res.statusCode === 200;
         resolve(backendOnline);
       });
@@ -91,7 +86,6 @@ function localApiFallbackPlugin() {
       });
     });
   };
-
   return {
     name: 'local-api-fallback',
     configureServer(server) {
@@ -99,48 +93,53 @@ function localApiFallbackPlugin() {
         if (!req.url || !req.url.startsWith('/api')) {
           return next();
         }
-
         const alive = await isBackendAlive();
         if (alive) {
           return next();
         }
-
         const url = new URL(req.url, 'http://localhost');
-
         if (url.pathname === '/api/health') {
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ status: 'ok', database: { engine: 'PostgreSQL', status: 'fallback_mode' } }));
+          res.end(JSON.stringify({
+            status: 'ok',
+            database: {
+              engine: 'PostgreSQL',
+              status: 'fallback_mode'
+            }
+          }));
           return;
         }
-
         if (url.pathname === '/api/diamonds' && req.method === 'GET') {
           let diamonds = readFallback();
           const shape = url.searchParams.get('shape');
           const color = url.searchParams.get('color');
           const clarity = url.searchParams.get('clarity');
           const onlyTripleExcellent = url.searchParams.get('onlyTripleExcellent') === 'true';
-
           if (shape && shape !== 'All') {
-            diamonds = diamonds.filter((d) => (d.shape || '').toLowerCase() === shape.toLowerCase());
+            diamonds = diamonds.filter(d => (d.shape || '').toLowerCase() === shape.toLowerCase());
           }
           if (color && color !== 'All') {
-            diamonds = diamonds.filter((d) => d.color === color);
+            diamonds = diamonds.filter(d => d.color === color);
           }
           if (clarity && clarity !== 'All') {
-            diamonds = diamonds.filter((d) => d.clarity === clarity);
+            diamonds = diamonds.filter(d => d.clarity === clarity);
           }
           if (onlyTripleExcellent) {
-            diamonds = diamonds.filter((d) => d.isTripleExcellent);
+            diamonds = diamonds.filter(d => d.isTripleExcellent);
           }
-
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ success: true, count: diamonds.length, diamonds }));
+          res.end(JSON.stringify({
+            success: true,
+            count: diamonds.length,
+            diamonds
+          }));
           return;
         }
-
         if (url.pathname === '/api/diamonds' && req.method === 'POST') {
           let body = '';
-          req.on('data', (chunk) => { body += chunk; });
+          req.on('data', chunk => {
+            body += chunk;
+          });
           req.on('end', () => {
             try {
               const diamondData = JSON.parse(body || '{}');
@@ -153,10 +152,7 @@ function localApiFallbackPlugin() {
                 return saveBase64MediaToFile(img, 'images', `${diamondId}-${idx}`);
               });
               const rawPoster = diamondData.videoPoster;
-              const resolvedVideoPoster = (!rawPoster || rawPoster === (diamondData.imageUrl || diamondData.image))
-                ? resolvedImageUrl
-                : saveBase64MediaToFile(rawPoster, 'images', `${diamondId}-poster`) || resolvedImageUrl;
-
+              const resolvedVideoPoster = !rawPoster || rawPoster === (diamondData.imageUrl || diamondData.image) ? resolvedImageUrl : saveBase64MediaToFile(rawPoster, 'images', `${diamondId}-poster`) || resolvedImageUrl;
               const newItem = {
                 id: diamondId,
                 originalId: diamondData.originalId || diamondData.id || '',
@@ -183,7 +179,7 @@ function localApiFallbackPlugin() {
                 symmetry: diamondData.symmetry || 'Excellent',
                 fluorescence: diamondData.fluorescence || 'None',
                 ratio: diamondData.ratio || '1.00',
-                price: diamondData.price || `$${(parseFloat(diamondData.priceValue || 1000)).toLocaleString('en-US')}`,
+                price: diamondData.price || `$${parseFloat(diamondData.priceValue || 1000).toLocaleString('en-US')}`,
                 priceValue: parseFloat(diamondData.priceValue) || 1000.0,
                 isTripleExcellent: Boolean(diamondData.isTripleExcellent !== false),
                 imageUrl: resolvedImageUrl,
@@ -195,31 +191,42 @@ function localApiFallbackPlugin() {
                 isCustomAdded: true,
                 createdAt: new Date().toISOString()
               };
-
               const current = readFallback();
-              const updated = [newItem, ...current.filter((d) => String(d.id) !== String(newItem.id))];
+              const updated = [newItem, ...current.filter(d => String(d.id) !== String(newItem.id))];
               writeFallback(updated);
-
               res.setHeader('Content-Type', 'application/json');
               res.statusCode = 201;
-              res.end(JSON.stringify({ success: true, message: 'Diamond saved to fallback storage', diamond: newItem }));
+              res.end(JSON.stringify({
+                success: true,
+                message: 'Diamond saved to fallback storage',
+                diamond: newItem
+              }));
             } catch (err) {
               res.statusCode = 500;
-              res.end(JSON.stringify({ success: false, error: err.message }));
+              res.end(JSON.stringify({
+                success: false,
+                error: err.message
+              }));
             }
           });
           return;
         }
-
         if (url.pathname === '/api/diamonds/bulk' && req.method === 'POST') {
           let body = '';
-          req.on('data', (chunk) => { body += chunk; });
+          req.on('data', chunk => {
+            body += chunk;
+          });
           req.on('end', () => {
             try {
-              const { diamonds } = JSON.parse(body || '{}');
+              const {
+                diamonds
+              } = JSON.parse(body || '{}');
               if (!Array.isArray(diamonds) || diamonds.length === 0) {
                 res.statusCode = 400;
-                res.end(JSON.stringify({ success: false, error: 'Empty diamonds array' }));
+                res.end(JSON.stringify({
+                  success: false,
+                  error: 'Empty diamonds array'
+                }));
                 return;
               }
               const current = readFallback();
@@ -243,38 +250,42 @@ function localApiFallbackPlugin() {
                   createdAt: new Date().toISOString()
                 };
               });
-              const ids = new Set(formattedList.map((d) => String(d.id)));
-              const updated = [...formattedList, ...current.filter((d) => !ids.has(String(d.id)))];
+              const ids = new Set(formattedList.map(d => String(d.id)));
+              const updated = [...formattedList, ...current.filter(d => !ids.has(String(d.id)))];
               writeFallback(updated);
-
               res.setHeader('Content-Type', 'application/json');
               res.statusCode = 201;
-              res.end(JSON.stringify({ success: true, count: formattedList.length, diamonds: formattedList }));
+              res.end(JSON.stringify({
+                success: true,
+                count: formattedList.length,
+                diamonds: formattedList
+              }));
             } catch (err) {
               res.statusCode = 500;
-              res.end(JSON.stringify({ success: false, error: err.message }));
+              res.end(JSON.stringify({
+                success: false,
+                error: err.message
+              }));
             }
           });
           return;
         }
-
         if (url.pathname.startsWith('/api/diamonds/') && (req.method === 'PUT' || req.method === 'PATCH')) {
           const id = url.pathname.replace('/api/diamonds/', '');
           let body = '';
-          req.on('data', (chunk) => { body += chunk; });
+          req.on('data', chunk => {
+            body += chunk;
+          });
           req.on('end', () => {
             try {
               const diamondData = JSON.parse(body || '{}');
               const resolvedVideoUrl = saveBase64MediaToFile(diamondData.videoUrl || diamondData.video, 'videos', id);
               const resolvedImageUrl = saveBase64MediaToFile(diamondData.imageUrl || diamondData.image, 'images', id);
-              const rawImages = Array.isArray(diamondData.images)
-                ? diamondData.images
-                : [resolvedImageUrl || diamondData.imageUrl || diamondData.image].filter(Boolean);
+              const rawImages = Array.isArray(diamondData.images) ? diamondData.images : [resolvedImageUrl || diamondData.imageUrl || diamondData.image].filter(Boolean);
               const resolvedImages = rawImages.map((img, idx) => saveBase64MediaToFile(img, 'images', `${id}-${idx}`));
               const resolvedVideoPoster = saveBase64MediaToFile(diamondData.videoPoster || resolvedImageUrl, 'images', `${id}-poster`) || resolvedImageUrl;
-
               const current = readFallback();
-              const existing = current.find((d) => String(d.id) === String(id)) || {};
+              const existing = current.find(d => String(d.id) === String(id)) || {};
               const updatedItem = {
                 ...existing,
                 ...diamondData,
@@ -287,34 +298,39 @@ function localApiFallbackPlugin() {
                 videoPoster: resolvedVideoPoster || existing.videoPoster || resolvedImageUrl,
                 updatedAt: new Date().toISOString()
               };
-
-              let updatedList = current.map((d) => (String(d.id) === String(id) ? updatedItem : d));
-              if (!current.some((d) => String(d.id) === String(id))) {
+              let updatedList = current.map(d => String(d.id) === String(id) ? updatedItem : d);
+              if (!current.some(d => String(d.id) === String(id))) {
                 updatedList = [updatedItem, ...current];
               }
               writeFallback(updatedList);
-
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ success: true, message: `Diamond ${id} updated in fallback storage`, diamond: updatedItem }));
+              res.end(JSON.stringify({
+                success: true,
+                message: `Diamond ${id} updated in fallback storage`,
+                diamond: updatedItem
+              }));
             } catch (err) {
               res.statusCode = 500;
-              res.end(JSON.stringify({ success: false, error: err.message }));
+              res.end(JSON.stringify({
+                success: false,
+                error: err.message
+              }));
             }
           });
           return;
         }
-
         if (url.pathname.startsWith('/api/diamonds/') && req.method === 'DELETE') {
           const id = url.pathname.replace('/api/diamonds/', '');
           const current = readFallback();
-          const updated = current.filter((d) => String(d.id) !== String(id));
+          const updated = current.filter(d => String(d.id) !== String(id));
           writeFallback(updated);
-
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ success: true, message: `Diamond ${id} deleted from fallback storage` }));
+          res.end(JSON.stringify({
+            success: true,
+            message: `Diamond ${id} deleted from fallback storage`
+          }));
           return;
         }
-
         next();
       });
     }
